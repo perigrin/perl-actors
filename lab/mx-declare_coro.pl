@@ -16,7 +16,7 @@ class Actor {
         is        => 'ro',
         default   => sub { [] },
         provides  => {
-            count => 'has_messages',
+            count => 'msg_count',
             push  => 'post',
             shift => 'get_message',
         }
@@ -28,16 +28,15 @@ class Actor {
         my ($self) = @_;
         Coro::async {
             while ( my $m = $self->get_message ) {
-                $self->sender( $m->{sender} );
-                $self->receive( @{ $m->{args} } );
+                $self->receive($m);
                 Coro::cede;
             }
         }
     }
 
     sub send {
-        my ( $self, $to, @args ) = @_;
-        $to->post( { sender => $self, args => [@args] } );
+        my ( $self, $to, $text ) = @_;
+        $to->post( { sender => $self, text => $text } );
     }
 };
 
@@ -60,7 +59,7 @@ class Ping extends Actor {
 
     sub receive {
         my ( $self, $message ) = @_;
-        given ($message) {
+        given ( $message->{text} ) {
             when (/^Pong/) {
                 say "Ping: Pong" unless ( $self->pingsLeft % 1000 );
                 unless ( $self->pingsLeft ) {
@@ -86,11 +85,11 @@ class Pong extends Actor {
 
     sub receive {
         my ( $self, $message ) = @_;
-        given ($message) {
+        given ($message->{text}) {
             when (/^Ping/) {
                 say "Pong:ping ${\$self->pongCount}"
                   unless ( $self->pongCount % 1000 );
-                $self->send( $self->sender => 'Pong' );
+                $self->send( $message->{sender} => 'Pong' );
                 $self->pongCount( $self->pongCount + 1 );
             }
 
@@ -109,6 +108,7 @@ my $ping = Ping->new( pingsLeft => 10000, pong => $pong );
 
 $pong->start;
 $ping->start;
-while ( $ping->has_messages || $pong->has_messages ) {
+
+while ( $ping->msg_count || $pong->msg_count ) {
     Coro::cede;
 }
