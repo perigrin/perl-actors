@@ -63,7 +63,7 @@ class Pong extends Actor {
     }
 };
 
-class PingPong {
+class Main {
     use Actor::Framework;
 
     my $pong = Pong->new();

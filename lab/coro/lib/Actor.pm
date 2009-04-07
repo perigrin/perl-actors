@@ -41,7 +41,7 @@ class Actor {
     }
 
     sub send {
-        my ( $self, $to, $text ) = @_;
-        $to->post( { sender => $self, text => $text } );
+        my ( $self, $to, $text, @args) = @_;
+        $to->post( { sender => $self, text => $text, args => \@args } );
     }
 };
