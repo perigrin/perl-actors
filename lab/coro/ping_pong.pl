@@ -63,12 +63,14 @@ class Pong extends Actor {
     }
 };
 
-package main;
+class PingPong {
+    use Actor::Framework;
 
-my $pong = Pong->new();
-my $ping = Ping->new( pingsLeft => 10000, pong => $pong );
+    my $pong = Pong->new();
+    my $ping = Ping->new( pingsLeft => 10000, pong => $pong );
 
-$pong->start;
-$ping->start;
+    $pong->start;
+    $ping->start;
 
-EV::loop();
+    run();
+}
