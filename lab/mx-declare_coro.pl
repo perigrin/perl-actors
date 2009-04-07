@@ -4,6 +4,7 @@ use 5.10.0;
 
 use MooseX::Declare;
 use Coro;
+use Coro::EV;
 
 # Based Upon the Ping/Pong example in Scala
 # http://www.scala-lang.org/node/242
@@ -85,10 +86,10 @@ class Pong extends Actor {
 
     sub receive {
         my ( $self, $message ) = @_;
-        given ($message->{text}) {
+        given ( $message->{text} ) {
             when (/^Ping/) {
                 say "Pong:ping ${\$self->pongCount}"
-                  unless ( $self->pongCount % 1000 );
+                    unless ( $self->pongCount % 1000 );
                 $self->send( $message->{sender} => 'Pong' );
                 $self->pongCount( $self->pongCount + 1 );
             }
@@ -109,6 +110,4 @@ my $ping = Ping->new( pingsLeft => 10000, pong => $pong );
 $pong->start;
 $ping->start;
 
-while ( $ping->msg_count || $pong->msg_count ) {
-    Coro::cede;
-}
+EV::loop;
