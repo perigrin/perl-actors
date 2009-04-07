@@ -1,56 +1,6 @@
-#!/usr/bin/env perl
-use strict;
 use 5.10.0;
-
+use lib qw(lib);
 use MooseX::Declare;
-use Coro;
-use Coro::EV;
-
-# Based Upon the Ping/Pong example in Scala
-# http://www.scala-lang.org/node/242
-
-class Actor {
-    use MooseX::AttributeHelpers;
-    has mailbox => (
-        metaclass => 'Collection::Array',
-        isa       => 'ArrayRef',
-        is        => 'ro',
-        default   => sub { [] },
-        provides  => {
-            count => 'msg_count',
-            push  => 'post',
-            shift => 'get_message',
-        }
-    );
-
-    has stopped => (
-        metaclass => 'Bool',
-        isa       => 'Bool',
-        is        => 'rw',
-        default   => 0,
-        provides  => {
-            set => 'quit',
-            not => 'running'
-        }
-    );
-
-    sub start {
-        my ($self) = @_;
-        Coro::async {
-            while ( $self->running ) {
-                my $m = $self->get_message;
-                next unless $m;
-                $self->receive($m);
-                Coro::cede;
-            }
-        }
-    }
-
-    sub send {
-        my ( $self, $to, $text ) = @_;
-        $to->post( { sender => $self, text => $text } );
-    }
-};
 
 class Ping extends Actor {
     has pong => (
@@ -121,4 +71,4 @@ my $ping = Ping->new( pingsLeft => 10000, pong => $pong );
 $pong->start;
 $ping->start;
 
-EV::loop;
+EV::loop();
