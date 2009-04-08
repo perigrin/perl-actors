@@ -30,7 +30,7 @@ class Actor {
 
     sub start {
         my ($self) = @_;
-        Coro::async {
+        Coro::async {            
             while ( $self->running ) {
                 my $m = $self->get_message;
                 next unless $m;
