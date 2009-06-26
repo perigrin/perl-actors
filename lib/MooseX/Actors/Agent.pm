@@ -1,20 +1,14 @@
 package MooseX::Actors::Agent;
-use MooseX::Role::Parameterized;
+use MooseX::Role;
 
-requires qw(clear_mailbox next_message);
+parameter agent => (
+    does       => 'MooseX::Actors::Backend',
+    handles    => 'MooseX::Actors::Backend',
+    lazy_build => 1,
+);
 
-parameter backend => ( isa => 'MooseX::Actors::Backend', );
-
-role {
-    my $p = shift;
-
-    sub start { $self->clear_mailbox }
-
-    sub check_mailbox {
-        for my $message ( @{ $self->mail_box } ) {
-            $self->handle_message($message);
-        }
-    }
+sub _build_agent {
+    MooseX::Actors::Backend::Simple->new();
 }
 
 1;
